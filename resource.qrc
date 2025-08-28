@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/rec">
+        <file>free-icon-exit-320140(1).png</file>
+        <file>free-icon-credit-10348982(1).png</file>
+    </qresource>
+</RCC>

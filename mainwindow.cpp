@@ -1,22 +1,58 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QTimer>
-#include <QTime>
+#include <QHBoxLayout>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->pass_line->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->pass_line, &QLineEdit::customContextMenuRequested,
+            this, &MainWindow::onLineEditContextMenu);
+
+    //Устанавливаем прогрессбар в нужное значение(я не нашла как это сделать через дизайнер так что прописала здесь)
     ui->progressBar->setRange(0, 100);
     ui->progressBar->setTextVisible(false);
     ui->progressBar->setValue(0);
     ui->progressBar->setStyleSheet("color: red;");
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::onLineEditContextMenu(const QPoint &pos)
+{
+    QLineEdit *pass_line = qobject_cast<QLineEdit*>(sender());
+    if (!pass_line) return;
+
+    //Создаем контексное меню
+    QMenu menu;
+
+    // Копировать
+    //Создаем действие с текстом "Копировать"
+    QAction *copyAction = menu.addAction("Копировать");
+    //Проверяем не пустая ли строка
+    copyAction->setEnabled(!pass_line->text().isEmpty());
+    //Подключаем копирование
+    connect(copyAction, &QAction::triggered, [pass_line]() {
+        QApplication::clipboard()->setText(pass_line->text());
+        qDebug() << "Пароль скопирован";
+    });
+
+    // Очистить
+    //Тоже самое но с "Очистить"
+    QAction *clearAction = menu.addAction("Очистить");
+    clearAction->setEnabled(!pass_line->text().isEmpty() && !pass_line->isReadOnly());
+    connect(clearAction, &QAction::triggered, [pass_line]() {
+        pass_line->clear();
+    });
+    //Отображение меню
+    menu.exec(pass_line->mapToGlobal(pos));
 }
 
 void MainWindow::on_capital_letters_stateChanged(int state)
@@ -99,7 +135,14 @@ void MainWindow::on_generate_clicked()
         return;
     }
     else{
-    QString pass = password.PasswordGenerating(lenght, uppercase, lowercase, numbers, specials);
+        //Создаем пул букв и символов
+        QString charset = "";
+        if (lowercase) charset += "abcdefghijklmnopqrstuvwxyz";
+        if (uppercase) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        if (numbers)     charset += "0123456789";
+        if (specials)    charset += "!@#$%^&*";
+
+    QString pass = password.PasswordGenerating(charset, lenght);
     ui->pass_line->setText(pass);
     ui->pass_line->setStyleSheet("color: black;");
 
@@ -107,17 +150,14 @@ void MainWindow::on_generate_clicked()
     ui->result->setText(strenght);
     if(strenght == "Очень слабый" || strenght == "Слабый"){
         ui->result->setStyleSheet("color: red;");
-        ui->progressBar->setStyleSheet("color: red;");
         value = 20;
     }
     if(strenght == "Средний"){
         ui->result->setStyleSheet("color: orange;");
-        ui->progressBar->setStyleSheet("color: orange;");
         value = 50;
     }
     if(strenght == "Надежный" || strenght == "Очень надежный"){
         ui->result->setStyleSheet("color: green;");
-        ui->progressBar->setStyleSheet("color: green;");
         if(strenght == "Надежный"){
             value = 80;
         }
@@ -157,5 +197,17 @@ void MainWindow::on_copy_in_bufer_clicked()
     // Показываем подтверждение
     ui->statusbar->showMessage("Текст скопирован в буфер обмена ✓", 2000);
     ui->statusbar->setStyleSheet("color: black;");
+}
+
+
+void MainWindow::on_action_triggered()
+{
+    QApplication::quit();
+}
+
+
+void MainWindow::on_action_2_triggered()
+{
+    ui->pass_line->setText("Программа генерирует пароль, чтобы ей воспользоваться выберите нужные параметры и нажмите кнопку 'Сгенерировать'.");
 }
 

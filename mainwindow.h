@@ -37,12 +37,19 @@ private slots:
 
     void on_copy_in_bufer_clicked();
 
+    void on_action_triggered();
+
+    void on_action_2_triggered();
+
+    void onLineEditContextMenu(const QPoint &pos);
+
+
 private:
     Ui::MainWindow *ui;
     bool lowercase{false};
     bool uppercase{false};
     bool numbers{false};
     bool specials{false};
-    int lenght{5};
+    int lenght{0};
 };
 #endif // MAINWINDOW_H

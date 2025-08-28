@@ -12,12 +12,8 @@
 
 class PasswordGenerator{
 private:
-    QString characterPool;
-    int lenght;
     QString password;
-    bool capital_letters{false};
-    bool lowercase_letters{false};
     QRandomGenerator *randomGenerator = QRandomGenerator::global();
 public:
-    QString PasswordGenerating(int lenght, bool capital_letters, bool lowercase_letters, bool numbers, bool spec);
+    QString PasswordGenerating(QString pool, int lenght);
 };
